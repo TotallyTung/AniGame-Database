@@ -1,6 +1,6 @@
-onmessage = (filteredCards, query) => {
-    const [filteredCards, query] = e.data;
-    filteredCards = cardDatabase.filter(card => {
+onmessage = (e) => {
+    let [cardDatabase, query] = e.data;
+    let filteredCards = cardDatabase.filter(card => {
         const matchStr = (card.name + " " + card.series + " " + " " + card.talent).toLowerCase();
         const keywords = query.split(/(?=\s#)/g).filter(w => w.trimLeft()[0] !== "#")[0]
         const attributeMatch = query.match(/(?<=#)(.*?)(?=\s#|$)/g);

@@ -456,9 +456,6 @@
     </div>
 
     <script>
-        if(!window.Worker){
-
-        }
         // Card data will be loaded from API
         let cardDatabase = [];
         let filteredCards = [];
@@ -466,8 +463,9 @@
         let currentDirection = 'asc';
         let customFormula = '';
         let isLoading = false;
-        let isSearch = false;
         let searchTimeout = null;
+        let searchWorker = new Worker("/js/searchWorker.js");
+        let sortWorker = new Worker("/js/sortWorker.js");
 
         // DOM Elements
         const searchInput = document.getElementById('searchInput');
@@ -525,23 +523,25 @@
         }
 
         function handleSearchInput(){
-            if(searchTimeout) clearTimeout(searchTimeout);
+            clearTimeout(searchTimeout);
             searchTimeout = setTimeout(handleSearch, 250);
         }
 
         function handleSearch() {
             const query = searchInput.value.toLowerCase().trim();
 
-            if(!query) filteredCards = [...cardDatabase];
-            else {
-                const searchWorker = new Worker("/js/searchWorker.js");
-                searchWorker.postMessage([filteredCards, query]);
+            if(!query){
+                filteredCards = [...cardDatabase];
+                sortCardsAndRender();
+            } else {
+                searchWorker.terminate();
+                searchWorker = new Worker("/js/searchWorker.js");
+                searchWorker.postMessage([cardDatabase, query]);
                 searchWorker.onmessage = (e) => {
                     filteredCards = e.data;
+                    sortCardsAndRender();
                 }
             }
-            
-            sortCardsAndRender();
         }
 
         function handleSort() {
@@ -573,8 +573,9 @@
         }
 
         function sortCardsAndRender() {
-            const sortWorker = new Worker("/js/sortWorker.js");
-            sortWorker.postMessage([filteredCards, currentDirection]);
+            sortWorker.terminate();
+            sortWorker = new Worker("/js/sortWorker.js");
+            sortWorker.postMessage([filteredCards, currentSort, currentDirection]);
             sortWorker.onmessage = (e) => {
                 filteredCards = e.data;
                 renderCards();

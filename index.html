@@ -492,7 +492,7 @@
             cardsGrid.innerHTML = '<div class="loading">Loading cards...</div>';
             
             try {
-                const response = await fetch('/api/anigame/getCard');
+                const response = await fetch('https://raw.githubusercontent.com/TotallyTung/AniGame-Database/refs/heads/main/cardData.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

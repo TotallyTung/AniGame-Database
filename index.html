@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anigame Card Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 50%, #0d1117 100%);
+            color: #e6edf3;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #58a6ff, #1f6feb, #0969da);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7d8590;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .controls {
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #21262d;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            align-items: end;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            background: #0d1117;
+            border: 2px solid #21262d;
+            border-radius: 10px;
+            color: #e6edf3;
+            font-size: 16px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #58a6ff;
+            background: #010409;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #58a6ff;
+            font-size: 18px;
+        }
+
+        .sort-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .sort-field-container {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sort-direction-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sort-section label {
+            color: #58a6ff;
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sort-select, .direction-select {
+            padding: 12px 15px;
+            background: #0d1117;
+            border: 2px solid #21262d;
+            border-radius: 8px;
+            color: #e6edf3;
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sort-select:focus, .direction-select:focus {
+            outline: none;
+            border-color: #58a6ff;
+            background: #010409;
+        }
+
+        .custom-sort-container {
+            margin-top: 15px;
+        }
+
+        .custom-sort-container label {
+            color: #58a6ff;
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .custom-formula {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0d1117;
+            border: 2px solid #21262d;
+            border-radius: 8px;
+            color: #e6edf3;
+            font-size: 14px;
+            font-family: 'Roboto', monospace;
+            font-weight: 400;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-formula:focus {
+            outline: none;
+            border-color: #58a6ff;
+            background: #010409;
+        }
+
+        .apply-custom-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #1f6feb, #0969da);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .apply-custom-btn:hover {
+            background: linear-gradient(45deg, #58a6ff, #1f6feb);
+            transform: translateY(-1px);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #0d1117, #161b22);
+            border: 1px solid #21262d;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #58a6ff, #1f6feb, #0969da);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #30363d;
+            background: linear-gradient(145deg, #161b22, #21262d);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .card-id {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            font-family: 'Roboto', monospace;
+        }
+
+        .card-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #f0f6fc;
+            margin-bottom: 8px;
+        }
+
+        .card-info {
+            margin-bottom: 20px;
+        }
+
+        .card-location {
+            color: #7d8590;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+        }
+
+        .card-series {
+            color: #7d8590;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .card-talent {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c9a9dd;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .card-type {
+            display: inline-block;
+            background: linear-gradient(45deg, #1f6feb, #0969da);
+            color: #ffffff;
+            padding: 5px 14px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat {
+            background: #010409;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #21262d;
+        }
+
+        .stat-name {
+            font-size: 0.75rem;
+            color: #7d8590;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #58a6ff;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6e7681;
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #58a6ff;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .sort-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .sort-field-container,
+            .sort-direction-container {
+                flex: 1;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Anigame Card Database</h1>
+        </div>
+
+        <div class="controls">
+            <div class="search-section">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-bar" id="searchInput" placeholder="Search by keywords or use #<attribute> value...">
+                </div>
+                <small>Attributes: id, name, series, type, talent, location, floor, hp, atk, def, spd</small>
+            </div>
+            
+            <div class="sort-section">
+                <div class="sort-controls">
+                    <div class="sort-field-container">
+                        <label for="sortSelect">Sort By</label>
+                        <select class="sort-select" id="sortSelect">
+                            <option value="id">ID</option>
+                            <option value="name">Name</option>
+                            <option value="series">Series</option>
+                            <option value="type">Type</option>
+                            <option value="location">Location</option>
+                            <option value="talent">Talent</option>
+                            <option value="hp">HP</option>
+                            <option value="atk">ATK</option>
+                            <option value="def">DEF</option>
+                            <option value="spd">SPD</option>
+                            <option value="total">Total Stats</option>
+                            <option value="custom">Custom Formula</option>
+                        </select>
+                    </div>
+                    
+                    <div class="sort-direction-container">
+                        <label for="sortDirection">Order</label>
+                        <select class="direction-select" id="sortDirection">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="custom-sort-container" id="customSortContainer" style="display: none;">
+                    <label for="customFormula">Custom Formula</label>
+                    <textarea class="custom-formula" id="customFormula" placeholder="Enter formula using hp, atk, def, spd&#10;Examples:&#10;  hp + atk&#10;  (atk + spd) / 2&#10;  hp * 2 + def&#10;  atk - def + spd % 10"></textarea>
+                    <button class="apply-custom-btn" id="applyCustomBtn">Apply Sort</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-grid" id="cardsGrid">
+            <div class="loading">Loading cards...</div>
+        </div>
+    </div>
+
+    <script>
+        // Card data will be loaded from API
+        let cardDatabase = [];
+        let filteredCards = [];
+        let currentSort = 'id';
+        let currentDirection = 'asc';
+        let customFormula = '';
+        let isLoading = false;
+        let isSearch = false;
+        let searchTimeout = null;
+
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const sortDirection = document.getElementById('sortDirection');
+        const customSortContainer = document.getElementById('customSortContainer');
+        const customFormulaInput = document.getElementById('customFormula');
+        const applyCustomBtn = document.getElementById('applyCustomBtn');
+        const cardsGrid = document.getElementById('cardsGrid');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCards();
+            
+            searchInput.addEventListener('input', handleSearchInput);
+            sortSelect.addEventListener('change', handleSort);
+            sortDirection.addEventListener('change', handleSortDirection);
+            applyCustomBtn.addEventListener('click', applyCustomSort);
+        });
+
+        async function loadCards() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            cardsGrid.innerHTML = '<div class="loading">Loading cards...</div>';
+            
+            try {
+                const response = await fetch('/api/anigame/getCard');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Convert API response format to array
+                cardDatabase = Object.entries(data).map(([id, cardData]) => ({
+                    id: id,
+                    name: cardData.name,
+                    series: cardData.series,
+                    location: cardData.location,
+                    type: cardData.type.trim(),
+                    stats: cardData.stats,
+                    talent: cardData.talent
+                }));
+                
+                filteredCards = [...cardDatabase];
+                renderCards();
+                
+            } catch (error) {
+                console.error('Error loading cards:', error);
+                cardsGrid.innerHTML = '<div class="no-results">Error loading cards. Please try again later.</div>';
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function handleSearchInput(){
+            if(searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(handleSearch, 1000);
+        }
+
+        function handleSearch() {
+            const query = searchInput.value.toLowerCase().trim();
+
+            if(!query) return cardDatabase;
+            
+            filteredCards = cardDatabase.filter(card => {
+                const matchStr = (card.name + " " + card.series + " " + " " + card.talent).toLowerCase();
+                const keywords = query.split(/(?=\s#)/g).filter(w => w.trimLeft()[0] !== "#")[0]
+                const attributeMatch = query.match(/(?<=#)(.*?)(?=\s#|$)/g);
+                const cardMatch = (keywords ? keywords.split(" ").some(k => matchStr.includes(k)) : false) ||
+                    (attributeMatch && attributeMatch.map(s=>s.split(/ (.+)/)).some(attribute_query => {
+                        const [attr, val] = attribute_query;
+                        return (card.location && ((attr === "location" && card.location.value == val) || (attr === "floor" && card.location.floor.includes(Number(val))))) ||
+                               (card[attr] && (typeof card[attr] !== "object") && String(card[attr]).toLowerCase().includes(val)) ||
+                               (card.stats[attr] && String(card.stats[attr]).includes(val))
+                    }))
+                
+                return cardMatch;
+            });
+            
+            sortCards();
+            renderCards();
+        }
+
+        function handleSort() {
+            currentSort = sortSelect.value;
+            
+            // Show/hide custom sort container
+            if (currentSort === 'custom') {
+                customSortContainer.style.display = 'block';
+            } else {
+                customSortContainer.style.display = 'none';
+                sortCards();
+                renderCards();
+            }
+        }
+
+        function handleSortDirection() {
+            currentDirection = sortDirection.value;
+            sortCards();
+            renderCards();
+        }
+
+        function applyCustomSort() {
+            const formula = customFormulaInput.value.trim();
+            if (!formula) {
+                alert('Please enter a formula');
+                return;
+            }
+            
+            customFormula = formula;
+            sortCards();
+            renderCards();
+        }
+
+        function sortCards() {
+            filteredCards.sort((a, b) => {
+                let comparison = 0;
+                
+                switch(currentSort) {
+                    case 'id':
+                        comparison = parseInt(a.id) - parseInt(b.id);
+                        break;
+                    case 'name':
+                        comparison = a.name.localeCompare(b.name);
+                        break;
+                    case 'series':
+                        const seriesA = a.series || '';
+                        const seriesB = b.series || '';
+                        comparison = seriesA.localeCompare(seriesB);
+                        break;
+                    case 'type':
+                        comparison = a.type.localeCompare(b.type);
+                        break;
+                    case 'location':
+                        // Handle both old and new location formats
+                        let locationA = '';
+                        let locationB = '';
+                        
+                        if (a.location) {
+                            if (typeof a.location === 'string') {
+                                locationA = a.location;
+                            } else if (typeof a.location === 'object' && a.location.value !== undefined) {
+                                locationA = a.location.value.toString();
+                            }
+                        }
+                        
+                        if (b.location) {
+                            if (typeof b.location === 'string') {
+                                locationB = b.location;
+                            } else if (typeof b.location === 'object' && b.location.value !== undefined) {
+                                locationB = b.location.value.toString();
+                            }
+                        }
+                        
+                        comparison = locationA.localeCompare(locationB);
+                        break;
+                    case 'talent':
+                        const talentA = a.talent || '';
+                        const talentB = b.talent || '';
+                        comparison = talentA.localeCompare(talentB);
+                        break;
+                    case 'hp':
+                        comparison = a.stats.hp - b.stats.hp;
+                        break;
+                    case 'atk':
+                        comparison = a.stats.atk - b.stats.atk;
+                        break;
+                    case 'def':
+                        comparison = a.stats.def - b.stats.def;
+                        break;
+                    case 'spd':
+                        comparison = a.stats.spd - b.stats.spd;
+                        break;
+                    case 'total':
+                        const totalA = a.stats.hp + a.stats.atk + a.stats.def + a.stats.spd;
+                        const totalB = b.stats.hp + b.stats.atk + b.stats.def + b.stats.spd;
+                        comparison = totalA - totalB;
+                        break;
+                    case 'custom':
+                        if (!customFormula) return 0;
+                        
+                        try {
+                            const valueA = evaluateFormula(customFormula, a.stats);
+                            const valueB = evaluateFormula(customFormula, b.stats);
+                            comparison = valueA - valueB;
+                        } catch (error) {
+                            console.error('Error evaluating custom formula:', error);
+                            return 0;
+                        }
+                        break;
+                    default:
+                        comparison = 0;
+                }
+                
+                // Apply sort direction
+                return currentDirection === 'desc' ? -comparison : comparison;
+            });
+        }
+
+        function evaluateFormula(formula, stats) {
+            // Replace stat names with actual values
+            let expression = formula.toLowerCase()
+                .replace(/hp/g, stats.hp)
+                .replace(/atk/g, stats.atk)
+                .replace(/def/g, stats.def)
+                .replace(/spd/g, stats.spd);
+            
+            // Security check: only allow numbers, operators, parentheses, and whitespace
+            if (!/^[\d+\-*/%().\s]+$/.test(expression)) {
+                throw new Error('Invalid characters in formula');
+            }
+            
+            // Evaluate the mathematical expression
+            try {
+                return Function('"use strict"; return (' + expression + ')')();
+            } catch (error) {
+                throw new Error('Invalid formula: ' + error.message);
+            }
+        }
+
+        function renderCards() {
+            if (filteredCards.length === 0 && !isLoading) {
+                cardsGrid.innerHTML = '<div class="no-results">No cards found matching your search.</div>';
+                return;
+            }
+
+            const cardsHTML = filteredCards.map(card => {
+                // Format location display
+                let locationDisplay = '';
+                if (card.location) {
+                    if (typeof card.location === 'string') {
+                        // Old format
+                        locationDisplay = card.location;
+                    } else if (typeof card.location === 'object' && card.location.value !== undefined) {
+                        // New format
+                        const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(', ')})` : '';
+                        locationDisplay = `${card.location.value}${floors}`;
+                    }
+                }
+
+                return `
+                <div class="card fade-in">
+                    <div class="card-header">
+                        <div class="card-id">#${card.id}</div>
+                    </div>
+                    
+                    <div class="card-info">
+                        <div class="card-name">${card.name}</div>
+                        ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
+                        ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
+                        <div class="card-type">${card.type}</div>
+                        ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
+                    </div>
+                    
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-name">HP</div>
+                            <div class="stat-value">${card.stats.hp}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-name">ATK</div>
+                            <div class="stat-value">${card.stats.atk}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-name">DEF</div>
+                            <div class="stat-value">${card.stats.def}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-name">SPD</div>
+                            <div class="stat-value">${card.stats.spd}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            cardsGrid.innerHTML = cardsHTML;
+        }
+    </script>
+</body>
+</html>

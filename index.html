@@ -536,7 +536,7 @@
             } else {
                 console.log("Created search worker.");
                 searchWorker.terminate();
-                searchWorker = new Worker("/js/searchWorker.js");
+                searchWorker = new Worker("js/searchWorker.js");
                 searchWorker.postMessage([cardDatabase, query]);
                 searchWorker.onmessage = (e) => {
                     filteredCards = e.data;
@@ -576,7 +576,7 @@
         function sortCardsAndRender() {
             console.log("Created sort worker.");
             sortWorker.terminate();
-            sortWorker = new Worker("/js/sortWorker.js");
+            sortWorker = new Worker("js/sortWorker.js");
             sortWorker.postMessage([filteredCards, currentSort, currentDirection]);
             sortWorker.onmessage = (e) => {
                 filteredCards = e.data;
@@ -594,14 +594,8 @@
                 // Format location display
                 let locationDisplay = '';
                 if (card.location) {
-                    if (typeof card.location === 'string') {
-                        // Old format
-                        locationDisplay = card.location;
-                    } else if (typeof card.location === 'object' && card.location.value !== undefined) {
-                        // New format
-                        const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(', ')})` : '';
-                        locationDisplay = `${card.location.value}${floors}`;
-                    }
+                    const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(', ')})` : '';
+                    locationDisplay = `${card.location.value}${floors}`;
                 }
 
                 return `

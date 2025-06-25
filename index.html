@@ -523,13 +523,11 @@
 
         function handleSearchInput(){
             if(searchTimeout) clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(handleSearch, 500);
+            searchTimeout = setTimeout(handleSearch, 250);
         }
 
         function handleSearch() {
             const query = searchInput.value.toLowerCase().trim();
-
-            if(!query) filteredCards = cardDatabase;
             
             filteredCards = cardDatabase.filter(card => {
                 const matchStr = (card.name + " " + card.series + " " + " " + card.talent).toLowerCase();
@@ -545,6 +543,8 @@
                 
                 return cardMatch;
             });
+
+            if(!query) filteredCards = [...cardDatabase];
             
             sortCards();
             renderCards();

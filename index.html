@@ -529,7 +529,7 @@
         function handleSearch() {
             const query = searchInput.value.toLowerCase().trim();
 
-            if(!query) return cardDatabase;
+            if(!query) filteredCards = cardDatabase;
             
             filteredCards = cardDatabase.filter(card => {
                 const matchStr = (card.name + " " + card.series + " " + " " + card.talent).toLowerCase();

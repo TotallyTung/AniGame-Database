@@ -535,7 +535,7 @@
             if(!query) filteredCards = [...cardDatabase];
             else {
                 const searchWorker = new Worker("/js/searchWorker.js");
-                searchWorker.postMessage(filteredCards, query);
+                searchWorker.postMessage([filteredCards, query]);
                 searchWorker.onmessage = (e) => {
                     filteredCards = e.data;
                 }
@@ -574,7 +574,7 @@
 
         function sortCardsAndRender() {
             const sortWorker = new Worker("/js/sortWorker.js");
-            sortWorker.postMessage(filteredCards, currentDirection);
+            sortWorker.postMessage([filteredCards, currentDirection]);
             sortWorker.onmessage = (e) => {
                 filteredCards = e.data;
                 renderCards();

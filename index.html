@@ -534,7 +534,6 @@
                 filteredCards = [...cardDatabase];
                 sortCardsAndRender();
             } else {
-                console.log("Created search worker.");
                 searchWorker.terminate();
                 searchWorker = new Worker("js/searchWorker.js");
                 searchWorker.postMessage([cardDatabase, query]);
@@ -574,7 +573,6 @@
         }
 
         function sortCardsAndRender() {
-            console.log("Created sort worker.");
             sortWorker.terminate();
             sortWorker = new Worker("js/sortWorker.js");
             sortWorker.postMessage([filteredCards, currentSort, currentDirection, customFormula]);

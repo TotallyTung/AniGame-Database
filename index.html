@@ -577,7 +577,7 @@
             console.log("Created sort worker.");
             sortWorker.terminate();
             sortWorker = new Worker("js/sortWorker.js");
-            sortWorker.postMessage([filteredCards, currentSort, currentDirection]);
+            sortWorker.postMessage([filteredCards, currentSort, currentDirection, customFormula]);
             sortWorker.onmessage = (e) => {
                 filteredCards = e.data;
                 renderCards();

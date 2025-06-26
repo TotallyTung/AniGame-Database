@@ -20,7 +20,7 @@ function evaluateFormula(formula, stats) {
 }
 
 onmessage = (e) => {
-    let [filteredCards, currentSort, currentDirection] = e.data;
+    let [filteredCards, currentSort, currentDirection, customFormula] = e.data;
     filteredCards.sort((a, b) => {
         let comparison = 0;
                 

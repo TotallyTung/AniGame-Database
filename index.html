@@ -402,6 +402,7 @@
     <div class="dashboard">
         <div class="header">
             <h1>Anigame Card Database</h1>
+            <h5 style="color: gray;">Last Updated: <span id="lastUpdate">Unknown</span></h5>
         </div>
 
         <div class="controls">
@@ -464,10 +465,10 @@
         let customFormula = '';
         let isLoading = false;
         let searchTimeout = null;
-        let searchWorker = new Worker("/js/searchWorker.js");
-        let sortWorker = new Worker("/js/sortWorker.js");
+        let searchWorker = null;
+        let sortWorker = null;
+        // Github path issue "/js/" doesn't work. instead "js/" (worker)
 
-        // DOM Elements
         const searchInput = document.getElementById('searchInput');
         const sortSelect = document.getElementById('sortSelect');
         const sortDirection = document.getElementById('sortDirection');
@@ -476,8 +477,11 @@
         const applyCustomBtn = document.getElementById('applyCustomBtn');
         const cardsGrid = document.getElementById('cardsGrid');
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            fetch("https://api.github.com/repos/TotallyTung/Anigame-Database/commits?path=cardData.json&per_page=1").then(res => res.json().then(data => {
+                document.getElementById("lastUpdate").innerText = (new Date(data[0].commit.committer.date)).toLocaleDateString("en-UK", {day: "numeric", month: "short", year: "numeric"});
+            })); // Get update date xd
+
             loadCards();
             
             searchInput.addEventListener('input', handleSearchInput);
@@ -493,14 +497,13 @@
             cardsGrid.innerHTML = '<div class="loading">Loading cards...</div>';
             
             try {
-                const response = await fetch('https://raw.githubusercontent.com/TotallyTung/AniGame-Database/refs/heads/main/cardData.json');
+                let response = await fetch("https://raw.githubusercontent.com/TotallyTung/AniGame-Database/refs/heads/main/cardData.json");
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 
-                // Convert API response format to array
                 cardDatabase = Object.entries(data).map(([id, cardData]) => ({
                     id: id,
                     name: cardData.name,
@@ -534,7 +537,7 @@
                 filteredCards = [...cardDatabase];
                 sortCardsAndRender();
             } else {
-                searchWorker.terminate();
+                if(searchWorker) searchWorker.terminate();
                 searchWorker = new Worker("js/searchWorker.js");
                 searchWorker.postMessage([cardDatabase, query]);
                 searchWorker.onmessage = (e) => {
@@ -573,9 +576,9 @@
         }
 
         function sortCardsAndRender() {
-            sortWorker.terminate();
+            if(sortWorker) sortWorker.terminate();
             sortWorker = new Worker("js/sortWorker.js");
-            sortWorker.postMessage([filteredCards, currentSort, currentDirection, customFormula]);
+            sortWorker.postMessage([filteredCards, currentSort, currentDirection]);
             sortWorker.onmessage = (e) => {
                 filteredCards = e.data;
                 renderCards();

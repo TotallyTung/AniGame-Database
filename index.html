@@ -515,7 +515,7 @@
                 }));
                 
                 filteredCards = [...cardDatabase];
-                renderCards(true);
+                renderCards();
                 
             } catch (error) {
                 console.error('Error loading cards:', error);
@@ -585,57 +585,59 @@
             }
         }
 
-        function renderCards(cancel = false) {
+        function renderCards(reset = false) {
             if (filteredCards.length === 0 && !isLoading) {
                 cardsGrid.innerHTML = '<div class="no-results">No cards found matching your search.</div>';
                 return;
             }
 
-            if(cancel){
+            if(reset){
                 loopIndex = 0;
                 cardsGrid.innerHTML = "";
             }
             
             let card = filteredCards[loopIndex];
-            let locationDisplay = '';
+            let locationDisplay = "";
             if (card.location) {
-                const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(', ')})` : '';
+                const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(", ")})` : "";
                 locationDisplay = `${card.location.value}${floors}`;
             }
 
-            cardsGrid.innerHTML += `
-            <div class="card fade-in">
-                <div class="card-header">
-                    <div class="card-id">#${card.id}</div>
-                </div>
+            let cardElement = document.createElement("div");
+            cardElement.className = "card fade-in";
+            cardElement.innerHTML = `
+            <div class="card-header">
+                <div class="card-id">#${card.id}</div>
+            </div>
                 
-                <div class="card-info">
-                    <div class="card-name">${card.name}</div>
-                    ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
-                    ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
-                    <div class="card-type">${card.type}</div>
-                    ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
+            <div class="card-info">
+                <div class="card-name">${card.name}</div>
+                ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
+                ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
+                <div class="card-type">${card.type}</div>
+                ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
+            </div>
+                
+            <div class="card-stats">
+                <div class="stat">
+                    <div class="stat-name">HP</div>
+                    <div class="stat-value">${card.stats.hp}</div>
                 </div>
-                    
-                <div class="card-stats">
-                    <div class="stat">
-                        <div class="stat-name">HP</div>
-                        <div class="stat-value">${card.stats.hp}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-name">ATK</div>
-                        <div class="stat-value">${card.stats.atk}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-name">DEF</div>
-                        <div class="stat-value">${card.stats.def}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-name">SPD</div>
-                        <div class="stat-value">${card.stats.spd}</div>
-                    </div>
+                <div class="stat">
+                    <div class="stat-name">ATK</div>
+                    <div class="stat-value">${card.stats.atk}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-name">DEF</div>
+                    <div class="stat-value">${card.stats.def}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-name">SPD</div>
+                    <div class="stat-value">${card.stats.spd}</div>
                 </div>
             </div>`;
+
+            cardsGrid.appendChild(cardElement);
 
             loopIndex++;
             if (loopIndex < filteredCards.length) requestAnimationFrame(renderCards);

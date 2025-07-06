@@ -467,7 +467,7 @@
         let sortWorker = null;
         // Github path issue "/js/" doesn't work. instead "js/" (worker)
 
-        const renderBatchSize = 50;
+        const renderBatchSize = 30;
         const searchInput = document.getElementById('searchInput');
         const sortSelect = document.getElementById('sortSelect');
         const sortDirection = document.getElementById('sortDirection');
@@ -637,7 +637,7 @@
                 cardsGrid.appendChild(cardElement);
             }
 
-            if (loopIndex < filteredCards.length) requestAnimationFrame(() => renderCards());
+            if (loopIndex < filteredCards.length) requestIdleCallback(() => renderCards());
             else isLoading = false;
         }
     </script>

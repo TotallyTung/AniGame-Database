@@ -467,6 +467,7 @@
         let searchTimeout = null;
         let searchWorker = null;
         let sortWorker = null;
+        let loopIndex = 0;
         // Github path issue "/js/" doesn't work. instead "js/" (worker)
 
         const searchInput = document.getElementById('searchInput');
@@ -581,61 +582,64 @@
             sortWorker.postMessage([filteredCards, currentSort, currentDirection, customFormula]);
             sortWorker.onmessage = (e) => {
                 filteredCards = e.data;
-                renderCards();
+                renderCards(true);
             }
         }
 
-        function renderCards() {
+        function renderCards(cancel = false) {
             if (filteredCards.length === 0 && !isLoading) {
                 cardsGrid.innerHTML = '<div class="no-results">No cards found matching your search.</div>';
                 return;
             }
 
-            const cardsHTML = filteredCards.map(card => {
-                // Format location display
-                let locationDisplay = '';
-                if (card.location) {
-                    const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(', ')})` : '';
-                    locationDisplay = `${card.location.value}${floors}`;
-                }
+            if(cancel){
+                loopIndex = 0;
+                cardsGrid.innerHTML = "";
+            }
+            
+            let card = filteredCards[loopIndex];
+            let locationDisplay = '';
+            if (card.location) {
+                const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(', ')})` : '';
+                locationDisplay = `${card.location.value}${floors}`;
+            }
 
-                return `
-                <div class="card fade-in">
-                    <div class="card-header">
-                        <div class="card-id">#${card.id}</div>
-                    </div>
+            cardsGrid.innerHTML += `
+            <div class="card fade-in">
+                <div class="card-header">
+                    <div class="card-id">#${card.id}</div>
+                </div>
+                
+                <div class="card-info">
+                    <div class="card-name">${card.name}</div>
+                    ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
+                    ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
+                    <div class="card-type">${card.type}</div>
+                    ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
+                </div>
                     
-                    <div class="card-info">
-                        <div class="card-name">${card.name}</div>
-                        ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
-                        ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
-                        <div class="card-type">${card.type}</div>
-                        ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
+                <div class="card-stats">
+                    <div class="stat">
+                        <div class="stat-name">HP</div>
+                        <div class="stat-value">${card.stats.hp}</div>
                     </div>
-                    
-                    <div class="card-stats">
-                        <div class="stat">
-                            <div class="stat-name">HP</div>
-                            <div class="stat-value">${card.stats.hp}</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-name">ATK</div>
-                            <div class="stat-value">${card.stats.atk}</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-name">DEF</div>
-                            <div class="stat-value">${card.stats.def}</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-name">SPD</div>
-                            <div class="stat-value">${card.stats.spd}</div>
-                        </div>
+                    <div class="stat">
+                        <div class="stat-name">ATK</div>
+                        <div class="stat-value">${card.stats.atk}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">DEF</div>
+                        <div class="stat-value">${card.stats.def}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">SPD</div>
+                        <div class="stat-value">${card.stats.spd}</div>
                     </div>
                 </div>
-            `;
-            }).join('');
+            </div>`;
 
-            cardsGrid.innerHTML = cardsHTML;
+            loopIndex++;
+            if (loopIndex < filteredCards.length) requestAnimationFrame(renderCards);
         }
     </script>
 </body>

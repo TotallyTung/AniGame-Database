@@ -450,10 +450,7 @@
                 </div>
             </div>
         </div>
-
-        <div class="cards-grid" id="cardsGrid">
-            <div class="loading">Loading cards...</div>
-        </div>
+        <div class="cards-grid" id="cardsGrid"></div>
     </div>
 
     <script>
@@ -464,11 +461,13 @@
         let customFormula = '';
         let isLoading = false;
         let searchTimeout = null;
+        let loopIndex = 0;
+
         let searchWorker = null;
         let sortWorker = null;
-        let loopIndex = 0;
         // Github path issue "/js/" doesn't work. instead "js/" (worker)
 
+        const renderBatchSize = 50;
         const searchInput = document.getElementById('searchInput');
         const sortSelect = document.getElementById('sortSelect');
         const sortDirection = document.getElementById('sortDirection');
@@ -494,7 +493,6 @@
             if (isLoading) return;
             
             isLoading = true;
-            cardsGrid.innerHTML = '<div class="loading">Loading cards...</div>';
             
             try {
                 let response = await fetch("https://raw.githubusercontent.com/TotallyTung/AniGame-Database/refs/heads/main/cardData.json");
@@ -520,8 +518,6 @@
             } catch (error) {
                 console.error('Error loading cards:', error);
                 cardsGrid.innerHTML = '<div class="no-results">Error loading cards. Please try again later.</div>';
-            } finally {
-                isLoading = false;
             }
         }
 
@@ -595,52 +591,54 @@
                 loopIndex = 0;
                 cardsGrid.innerHTML = "";
             }
-            
-            let card = filteredCards[loopIndex];
-            let locationDisplay = "";
-            if (card.location) {
-                const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(", ")})` : "";
-                locationDisplay = `${card.location.value}${floors}`;
+
+            for(let i = 0; i < renderBatchSize && loopIndex < filteredCards.length; i++, loopIndex++){
+                let card = filteredCards[loopIndex];
+                let locationDisplay = "";
+                if (card.location) {
+                    const floors = card.location.floor ? ` (Floors: ${card.location.floor.join(", ")})` : "";
+                    locationDisplay = `${card.location.value}${floors}`;
+                }
+
+                let cardElement = document.createElement("div");
+                cardElement.className = "card fade-in";
+                cardElement.innerHTML = `
+                <div class="card-header">
+                    <div class="card-id">#${card.id}</div>
+                </div>
+                    
+                <div class="card-info">
+                    <div class="card-name">${card.name}</div>
+                    ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
+                    ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
+                    <div class="card-type">${card.type}</div>
+                    ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
+                </div>
+                    
+                <div class="card-stats">
+                    <div class="stat">
+                        <div class="stat-name">HP</div>
+                        <div class="stat-value">${card.stats.hp}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">ATK</div>
+                        <div class="stat-value">${card.stats.atk}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">DEF</div>
+                        <div class="stat-value">${card.stats.def}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">SPD</div>
+                        <div class="stat-value">${card.stats.spd}</div>
+                    </div>
+                </div>`;
+
+                cardsGrid.appendChild(cardElement);
             }
 
-            let cardElement = document.createElement("div");
-            cardElement.className = "card fade-in";
-            cardElement.innerHTML = `
-            <div class="card-header">
-                <div class="card-id">#${card.id}</div>
-            </div>
-                
-            <div class="card-info">
-                <div class="card-name">${card.name}</div>
-                ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
-                ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
-                <div class="card-type">${card.type}</div>
-                ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
-            </div>
-                
-            <div class="card-stats">
-                <div class="stat">
-                    <div class="stat-name">HP</div>
-                    <div class="stat-value">${card.stats.hp}</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-name">ATK</div>
-                    <div class="stat-value">${card.stats.atk}</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-name">DEF</div>
-                    <div class="stat-value">${card.stats.def}</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-name">SPD</div>
-                    <div class="stat-value">${card.stats.spd}</div>
-                </div>
-            </div>`;
-
-            cardsGrid.appendChild(cardElement);
-
-            loopIndex++;
-            if (loopIndex < filteredCards.length) requestAnimationFrame(renderCards);
+            if (loopIndex < filteredCards.length) requestAnimationFrame(() => renderCards());
+            else isLoading = false;
         }
     </script>
 </body>

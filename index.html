@@ -220,7 +220,7 @@
             padding: 25px;
             transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
 
@@ -304,6 +304,36 @@
             border: 1px solid rgba(168, 85, 247, 0.2);
             margin-top: 10px;
             display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .card-talent::after {
+            content: attr(data-talent);
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            width: 300px;
+            word-wrap: break-word;
+            transform: translate(-50%, -100%);
+            background: #161b22;
+            color: #e6edf3;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid #21262d;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 9999;
+            pointer-events: none;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .card-talent:hover::after {
+            opacity: 1;
+            visibility: visible;
         }
 
         .card-type {
@@ -411,7 +441,7 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" class="search-bar" id="searchInput" placeholder="Search by keywords or use #<attribute> value...">
                 </div>
-                <small>Attributes: id, name, series, type, talent, location, floor, hp, atk, def, spd</small>
+                <small>Attributes: id, name, series, type, talent, talent_desc, location, floor, hp, atk, def, spd</small>
             </div>
             
             <div class="sort-section">
@@ -455,6 +485,7 @@
 
     <script>
         let cardDatabase = [];
+        let talentsData = [];
         let filteredCards = [];
         let currentSort = 'id';
         let currentDirection = 'asc';
@@ -467,7 +498,7 @@
         let sortWorker = null;
         // Github path issue "/js/" doesn't work. instead "js/" (worker)
 
-        const renderBatchSize = 30;
+        const renderBatchSize = 50;
         const searchInput = document.getElementById('searchInput');
         const sortSelect = document.getElementById('sortSelect');
         const sortDirection = document.getElementById('sortDirection');
@@ -496,13 +527,23 @@
             
             try {
                 let response = await fetch("https://raw.githubusercontent.com/TotallyTung/AniGame-Database/refs/heads/main/cardData.json");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                let response2 = await fetch("https://raw.githubusercontent.com/TotallyTung/AniGame-Database/refs/heads/main/talentData.json");
+                if (response.ok) {
+                    console.log("Fetched cards data!");
+                } else {
+                    throw new Error(`Failed to fetch cards data! status: ${response.status}`);
+                }
+
+                if(response2.ok){
+                    console.log("Fetched talents data!");
+                } else {
+                    throw new Error(`Failed to fetch talents data! status: ${response2.status}`);
                 }
                 
-                const data = await response.json();
+                const cardsData = await response.json();
+                talentsData = await response2.json();
                 
-                cardDatabase = Object.entries(data).map(([id, cardData]) => ({
+                cardDatabase = Object.entries(cardsData).map(([id, cardData]) => ({
                     id: id,
                     name: cardData.name,
                     series: cardData.series,
@@ -521,6 +562,10 @@
             }
         }
 
+        function getTalentDescription(talentName, cardName){
+            return talentsData[talentName].find(e => e[1].includes(cardName))[0];
+        }
+
         function handleSearchInput(){
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(handleSearch, 250);
@@ -535,7 +580,7 @@
             } else {
                 if(searchWorker) searchWorker.terminate();
                 searchWorker = new Worker("js/searchWorker.js");
-                searchWorker.postMessage([cardDatabase, query]);
+                searchWorker.postMessage([cardDatabase, query, talentsData]);
                 searchWorker.onmessage = (e) => {
                     filteredCards = e.data;
                     sortCardsAndRender();
@@ -609,10 +654,10 @@
                     
                 <div class="card-info">
                     <div class="card-name">${card.name}</div>
-                    ${card.series ? `<div class="card-series">${card.series}</div>` : ''}
+                    <div class="card-series">${card.series}</div>
                     ${locationDisplay ? `<div class="card-location">📍 ${locationDisplay}</div>` : ''}
                     <div class="card-type">${card.type}</div>
-                    ${card.talent ? `<div class="card-talent">✨ ${card.talent}</div>` : ''}
+                    <div class="card-talent" data-talent="${getTalentDescription(card.talent, card.name)}">✨ ${card.talent}</div>
                 </div>
                     
                 <div class="card-stats">
@@ -637,7 +682,7 @@
                 cardsGrid.appendChild(cardElement);
             }
 
-            if (loopIndex < filteredCards.length) requestIdleCallback(() => renderCards());
+            if (loopIndex < filteredCards.length) requestAnimationFrame(() => renderCards());
             else isLoading = false;
         }
     </script>
